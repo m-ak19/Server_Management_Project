@@ -2,9 +2,9 @@
 #define SYNCHROLISTH
 
 
-void actualise_list(char* path);
-int synchroniseLists();
-
+void getFileNames();
+void pipeSendList(int pipe_fd[]);
+void pipeReceiveList(int pipe_fd[]);
 
 
 

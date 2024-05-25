@@ -4,22 +4,32 @@
 #include <dirent.h>
 #include <time.h>
 #include <sys/stat.h>
-//#include <sys/types.h>
+#include <sys/wait.h>
 #include <string.h>
 #include "synchro_list.h"
 
-#define MSG_SIZE 128
-
-char* message = "TEST SUCCESS";
-
 
 int main(void){
+    int pid;
+    int pipe_fd[2];
 
-    if(synchroniseLists() == 1){
-        printf("Lists have beeen successfully synchronized. \n");
+    if (pipe(pipe_fd) == -1) {
+        perror("Erreur lors de la création du pipe.");
+        exit(EXIT_FAILURE);
     }
-    else{
-        printf("Error during lists synchronization.\n");
+
+    if ((pid = fork()) > 0) {
+        close(pipe_fd[0]); // Fermer le descripteur de fichier de lecture dans le processus parent
+        getFileNames();
+        pipeSendList(pipe_fd);
+        wait(NULL);
+    } else if (pid == 0) {
+        close(pipe_fd[1]); // Fermer le descripteur de fichier d'écriture dans le processus enfant
+        pipeReceiveList(pipe_fd);
+    } else {
+        perror("Erreur lors de la création du processus.");
+        exit(EXIT_FAILURE);
     }
+
     return 0;
 }

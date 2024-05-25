@@ -16,10 +16,9 @@ char* ProdServList = "listProduction.txt";
 char* BackupServList = "listBackup.txt";
 
 
-int synchroniseLists(){
+void getFileNames(){
 
-    char buffer[MSG_SIZE], cpy[] ="Production/", concat[200], date[10];
-    int p[2], pid, nbytes;
+    char cpy[] ="Production/", concat[200], date[10];
     struct stat attribute;
 
 
@@ -59,64 +58,64 @@ int synchroniseLists(){
     }
     fclose(fichier);
     closedir(dossier);
-    
+}
 
-    if(pipe(p) < 0){
-        printf("ERROR DURING PIPE CREATION");
+void pipeSendList(int pipe_fd[]){
+    char buffer[MSG_SIZE];
+    int i;
+
+    close(pipe_fd[0]);
+    FILE* fichier = fopen(ProdServList, "r");
+    char actualCharacter = '~';
+    if (fichier == NULL)
+    {
+        printf("ERREUR: Impossible d'ouvrir le fichier.\n");
+        close(pipe_fd[1]);
         exit(1);
     }
 
-    if((pid = fork()) > 0){
-        close(p[0]);
-        FILE* fichier = fopen(ProdServList, "r");
-        char actualCharacter = '~';
-        int i = 0;
-        if (fichier == NULL)
+    while((actualCharacter = fgetc(fichier)) != EOF)
+    {
+        i = 0;
+        while(actualCharacter != '\n' && actualCharacter != EOF)
         {
-            printf("ERREUR: Impossible d'ouvrir le fichier.\n");
-            close(p[1]);
-            exit(1);
+            buffer[i] = actualCharacter;
+            i++;
+            actualCharacter = fgetc(fichier);
         }
-
-        while((actualCharacter = fgetc(fichier)) != EOF)
-        {
-            i = 0;
-            while(actualCharacter != '\n' && actualCharacter != EOF)
-            {
-                buffer[i] = actualCharacter;
-                i++;
-                actualCharacter = fgetc(fichier);
-            }
-            buffer[i] = '\0';
-            write(p[1], buffer, MSG_SIZE);
-        }
-        close(p[1]); 
-        wait(NULL);
+        buffer[i] = '\0';
+        write(pipe_fd[1], buffer, MSG_SIZE);
     }
+    close(pipe_fd[1]); 
 
-    else { 
-            close(p[1]);
-            FILE* fichier = fopen(BackupServList, "w+");
-            while ((nbytes = read(p[0], buffer, MSG_SIZE)) > 0){
-                fichier = fopen(BackupServList, "a+");
-                if(fichier != NULL)
-                {
-                    // while((character = fgetc(fichier)) != EOF)
-                    // {
-                        // fputc(character, fichier);
-                    // }
-                    fputs(buffer, fichier);
-                    fputc('\n', fichier);
-                    printf("Buffer: %s\n", buffer);
-                    fclose(fichier);
-                }
-            }
-            close(p[0]); 
-            exit(EXIT_SUCCESS);
-            if (nbytes == 0){ 
-                exit(2);
-            } 
-            printf("Finished reading\n"); 
+
+}
+
+void pipeReceiveList(int pipe_fd[]){
+    char buffer[MSG_SIZE];
+    int nbytes;
+
+
+    close(pipe_fd[1]);
+    FILE* fichier = fopen(BackupServList, "w+");
+    while ((nbytes = read(pipe_fd[0], buffer, MSG_SIZE)) > 0){
+        fichier = fopen(BackupServList, "a+");
+        if(fichier != NULL)
+        {
+            // while((character = fgetc(fichier)) != EOF)
+            // {
+                // fputc(character, fichier);
+            // }
+            fputs(buffer, fichier);
+            fputc('\n', fichier);
+            printf("Buffer: %s\n", buffer);
+            fclose(fichier);
+        }
+    }
+    close(pipe_fd[0]); 
+    exit(EXIT_SUCCESS);
+    if (nbytes == 0){ 
+        exit(2);
     } 
-    return 1;
+    printf("Finished reading\n"); 
 }
