@@ -1,9 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <dirent.h>
-#include <time.h>
-#include <sys/stat.h>
 #include <sys/wait.h>
 #include <string.h>
 #include "synchro_list.h"

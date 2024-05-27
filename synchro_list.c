@@ -12,8 +12,8 @@
 #define MSG_SIZE 128
 #define FILENAME_LENGTH 256
 
-char* ProdServList = "listProduction.txt";
-char* BackupServList = "listBackup.txt";
+char* ServList = "listCopy.txt";
+char* IntegrationServList = "listIntegration.txt";
 
 
 void getFileNames(){
@@ -30,8 +30,8 @@ void getFileNames(){
         exit(1);
     }
 
-    FILE* fichier = fopen(ProdServList, "w+");
-    fichier = fopen(ProdServList, "a+");
+    FILE* fichier = fopen(ServList, "w+");
+    fichier = fopen(ServList, "a+");
 
     while ((entree = readdir(dossier)) != NULL) {
         if (entree->d_name[0] != '.') {
@@ -65,7 +65,7 @@ void pipeSendList(int pipe_fd[]){
     int i;
 
     close(pipe_fd[0]);
-    FILE* fichier = fopen(ProdServList, "r");
+    FILE* fichier = fopen(ServList, "r");
     char actualCharacter = '~';
     if (fichier == NULL)
     {
@@ -97,9 +97,9 @@ void pipeReceiveList(int pipe_fd[]){
 
 
     close(pipe_fd[1]);
-    FILE* fichier = fopen(BackupServList, "w+");
+    FILE* fichier = fopen(IntegrationServList, "w+");
     while ((nbytes = read(pipe_fd[0], buffer, MSG_SIZE)) > 0){
-        fichier = fopen(BackupServList, "a+");
+        fichier = fopen(IntegrationServList, "a+");
         if(fichier != NULL)
         {
             // while((character = fgetc(fichier)) != EOF)
