@@ -2,11 +2,14 @@ CC = gcc
 CFLAGS = -W -Wall -O3
 TARGET = system
 
-system: main.o synchro_list.o
-	$(CC) -o $(TARGET) main.o synchro_list.o
+system: main.o synchro_list.o copy_list.o
+	$(CC) -o $(TARGET) main.o synchro_list.o copy_list.o
 
 synchro_list.o: synchro_list.c synchro_list.h
 	$(CC) -c synchro_list.c $(CFLAGS) -o synchro_list.o
+
+copy_list.o: copy_list.c copy_list.h
+	$(CC) -c copy_list.c $(CFLAGS) -o copy_list.o
 
 main.o: main.c synchro_list.h
 	$(CC) -c main.c $(CFLAGS) -o main.o

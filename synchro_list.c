@@ -14,16 +14,17 @@
 
 char* ServList = "listCopy.txt";
 char* IntegrationServList = "listIntegration.txt";
+char* cpy = "Production/";
+char* directory = "Production";
 
+void writeFileNames(){
 
-void getFileNames(){
-
-    char cpy[] ="Production/", concat[200], date[10];
+    char concat[200], date[50];
     struct stat attribute;
 
 
     struct dirent *entree;
-    DIR *dossier = opendir("Production");
+    DIR *dossier = opendir(directory);
 
     if (dossier == NULL) {
         perror("Erreur lors de l'ouverture du dossier.");
@@ -47,11 +48,8 @@ void getFileNames(){
                     // }
                     fputs(entree->d_name, fichier);
                     fputs(" - ", fichier);
-                    strftime(date, 10, "%d/%m/%y", localtime(&(attribute.st_ctime)));
+                    strftime(date, 50, "%d/%m/%Y - %T", localtime(&(attribute.st_ctime)));
                     fputs(date, fichier);
-                    strftime(date, 10, "%T", localtime(&(attribute.st_ctime)));
-                    fputs(" - ", fichier);
-                    fputs(date, fichier);   
                     fputc('\n', fichier);
                 }
         }

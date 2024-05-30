@@ -4,12 +4,21 @@
 #include <sys/wait.h>
 #include <string.h>
 #include "synchro_list.h"
+#include "copy_list.h"
 
 
-int main(void){
-    int pid;
-    int pipe_fd[2];
+int main() {
+    FILE *updateListFile = fopen("listCopy.txt", "r");
+    if (!updateListFile) {
+        perror("Erreur lors de l'ouverture du fichier de liste");
+        return 1;
+    }
 
+    checkAndCopyFiles(updateListFile);
+
+    fclose(updateListFile);
+    return 0;
+}  /*
     if (pipe(pipe_fd) == -1) {
         perror("Erreur lors de la création du pipe.");
         exit(EXIT_FAILURE);
@@ -17,7 +26,7 @@ int main(void){
 
     if ((pid = fork()) > 0) {
         close(pipe_fd[0]); // Fermer le descripteur de fichier de lecture dans le processus parent
-        getFileNames();
+        writeFileNames();
         pipeSendList(pipe_fd);
         wait(NULL);
     } else if (pid == 0) {
@@ -27,6 +36,4 @@ int main(void){
         perror("Erreur lors de la création du processus.");
         exit(EXIT_FAILURE);
     }
-
-    return 0;
-}
+    */

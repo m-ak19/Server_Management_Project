@@ -1,5 +1,5 @@
-Procédure.docx - 25/05/24 - 20:59:32
-ListeDeClients.xlsx - 25/05/24 - 20:59:02
-essai.txt - 25/05/24 - 20:41:12
-Factures.xlsx - 25/05/24 - 12:36:36
-TEST.txt - 24/05/24 - 16:14:04
+Procédure.docx - 25/05/2024 - 20:59:32
+ListeDeClients.xlsx - 25/05/2024 - 20:59:02
+essai.txt - 25/05/2024 - 20:41:12
+Factures.xlsx - 25/05/2024 - 12:36:36
+TEST.txt - 24/05/2024 - 16:14:04
