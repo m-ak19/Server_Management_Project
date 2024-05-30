@@ -23,7 +23,7 @@ void writeFileNames(){
     struct stat attribute;
 
 
-    struct dirent *entree;
+    struct dirent *directoryGetter;
     DIR *dossier = opendir(directory);
 
     if (dossier == NULL) {
@@ -34,19 +34,19 @@ void writeFileNames(){
     FILE* fichier = fopen(ServList, "w+");
     fichier = fopen(ServList, "a+");
 
-    while ((entree = readdir(dossier)) != NULL) {
-        if (entree->d_name[0] != '.') {
+    while ((directoryGetter = readdir(dossier)) != NULL) {
+        if (directoryGetter->d_name[0] != '.') {
             strcpy(concat, cpy);
-            strcat(concat, entree->d_name);
+            strcat(concat, directoryGetter->d_name);
             stat(concat, &attribute);
-            //printf("%s\n", entree->d_name);
+            //printf("%s\n", directoryGetter->d_name);
                 if(fichier != NULL)
                 {
                     // while((character = fgetc(fichier)) != EOF)
                     // {
                         // fputc(character, fichier);
                     // }
-                    fputs(entree->d_name, fichier);
+                    fputs(directoryGetter->d_name, fichier);
                     fputs(" - ", fichier);
                     strftime(date, 50, "%d/%m/%Y - %T", localtime(&(attribute.st_ctime)));
                     fputs(date, fichier);
@@ -58,17 +58,17 @@ void writeFileNames(){
     closedir(dossier);
 }
 
-void pipeSendList(int pipe_fd[]){
+void pipeSendList(int p_fd[]){
     char buffer[MSG_SIZE];
     int i;
 
-    close(pipe_fd[0]);
+    close(p_fd[0]);
     FILE* fichier = fopen(ServList, "r");
     char actualCharacter = '~';
     if (fichier == NULL)
     {
         printf("ERREUR: Impossible d'ouvrir le fichier.\n");
-        close(pipe_fd[1]);
+        close(p_fd[1]);
         exit(1);
     }
 
@@ -82,21 +82,21 @@ void pipeSendList(int pipe_fd[]){
             actualCharacter = fgetc(fichier);
         }
         buffer[i] = '\0';
-        write(pipe_fd[1], buffer, MSG_SIZE);
+        write(p_fd[1], buffer, MSG_SIZE);
     }
-    close(pipe_fd[1]); 
+    close(p_fd[1]); 
 
 
 }
 
-void pipeReceiveList(int pipe_fd[]){
+void pipeReceiveList(int p_fd[]){
     char buffer[MSG_SIZE];
     int nbytes;
 
 
-    close(pipe_fd[1]);
+    close(p_fd[1]);
     FILE* fichier = fopen(IntegrationServList, "w+");
-    while ((nbytes = read(pipe_fd[0], buffer, MSG_SIZE)) > 0){
+    while ((nbytes = read(p_fd[0], buffer, MSG_SIZE)) > 0){
         fichier = fopen(IntegrationServList, "a+");
         if(fichier != NULL)
         {
@@ -110,7 +110,7 @@ void pipeReceiveList(int pipe_fd[]){
             fclose(fichier);
         }
     }
-    close(pipe_fd[0]); 
+    close(p_fd[0]); 
     exit(EXIT_SUCCESS);
     if (nbytes == 0){ 
         exit(2);
