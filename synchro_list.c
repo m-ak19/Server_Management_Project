@@ -14,17 +14,20 @@
 
 char* ServList = "listCopy.txt";
 char* IntegrationServList = "listIntegration.txt";
-char* cpy = "Production/";
-char* directory = "Production";
 
-void writeFileNames(){
 
-    char concat[200], date[50];
+pid_t choisirProcessus(pid_t pid1, pid_t pid2) {
+    return rand() % 2 == 0 ? pid1 : pid2;
+}
+
+void getFileNames(){
+
+    char cpy[] ="Production/", concat[200], date[10];
     struct stat attribute;
 
 
-    struct dirent *directoryGetter;
-    DIR *dossier = opendir(directory);
+    struct dirent *entree;
+    DIR *dossier = opendir("Production");
 
     if (dossier == NULL) {
         perror("Erreur lors de l'ouverture du dossier.");
@@ -34,22 +37,25 @@ void writeFileNames(){
     FILE* fichier = fopen(ServList, "w+");
     fichier = fopen(ServList, "a+");
 
-    while ((directoryGetter = readdir(dossier)) != NULL) {
-        if (directoryGetter->d_name[0] != '.') {
+    while ((entree = readdir(dossier)) != NULL) {
+        if (entree->d_name[0] != '.') {
             strcpy(concat, cpy);
-            strcat(concat, directoryGetter->d_name);
+            strcat(concat, entree->d_name);
             stat(concat, &attribute);
-            //printf("%s\n", directoryGetter->d_name);
+            //printf("%s\n", entree->d_name);
                 if(fichier != NULL)
                 {
                     // while((character = fgetc(fichier)) != EOF)
                     // {
                         // fputc(character, fichier);
                     // }
-                    fputs(directoryGetter->d_name, fichier);
+                    fputs(entree->d_name, fichier);
                     fputs(" - ", fichier);
-                    strftime(date, 50, "%d/%m/%Y - %T", localtime(&(attribute.st_ctime)));
+                    strftime(date, 10, "%d/%m/%y", localtime(&(attribute.st_ctime)));
                     fputs(date, fichier);
+                    strftime(date, 10, "%T", localtime(&(attribute.st_ctime)));
+                    fputs(" - ", fichier);
+                    fputs(date, fichier);   
                     fputc('\n', fichier);
                 }
         }
@@ -58,22 +64,23 @@ void writeFileNames(){
     closedir(dossier);
 }
 
-void pipeSendList(int p_fd[]){
+void pipeSendList(int pipe_fd[]){
     char buffer[MSG_SIZE];
     int i;
 
-    close(p_fd[0]);
+    close(pipe_fd[0]);
     FILE* fichier = fopen(ServList, "r");
     char actualCharacter = '~';
     if (fichier == NULL)
     {
         printf("ERREUR: Impossible d'ouvrir le fichier.\n");
-        close(p_fd[1]);
+        close(pipe_fd[1]);
         exit(1);
     }
 
     while((actualCharacter = fgetc(fichier)) != EOF)
     {
+        printf("PIPE 1\n");
         i = 0;
         while(actualCharacter != '\n' && actualCharacter != EOF)
         {
@@ -82,21 +89,22 @@ void pipeSendList(int p_fd[]){
             actualCharacter = fgetc(fichier);
         }
         buffer[i] = '\0';
-        write(p_fd[1], buffer, MSG_SIZE);
+        printf("PIPESENDLIST BEFORE WRITE PIPE\n");
+        write(pipe_fd[1], buffer, MSG_SIZE);
     }
-    close(p_fd[1]); 
+    close(pipe_fd[1]); 
 
 
 }
 
-void pipeReceiveList(int p_fd[]){
+void pipeReceiveList(int pipe_fd[]){
     char buffer[MSG_SIZE];
     int nbytes;
 
-
-    close(p_fd[1]);
+    close(pipe_fd[1]);
     FILE* fichier = fopen(IntegrationServList, "w+");
-    while ((nbytes = read(p_fd[0], buffer, MSG_SIZE)) > 0){
+    while ((nbytes = read(pipe_fd[0], buffer, MSG_SIZE)) > 0){
+        printf("PIPERECEIVELIST AFTER RECEIVING PIPE \n");
         fichier = fopen(IntegrationServList, "a+");
         if(fichier != NULL)
         {
@@ -110,7 +118,7 @@ void pipeReceiveList(int p_fd[]){
             fclose(fichier);
         }
     }
-    close(p_fd[0]); 
+    close(pipe_fd[0]); 
     exit(EXIT_SUCCESS);
     if (nbytes == 0){ 
         exit(2);

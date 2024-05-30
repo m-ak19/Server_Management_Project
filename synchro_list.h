@@ -2,7 +2,7 @@
 #define SYNCHROLISTH
 
 
-void writeFileNames();
+void getFileNames();
 void pipeSendList(int pipe_fd[]);
 void pipeReceiveList(int pipe_fd[]);
 

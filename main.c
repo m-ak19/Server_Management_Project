@@ -1,103 +1,107 @@
+#include "copy_list.h"
+#include "synchro_list.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
 #include <string.h>
+#include <signal.h>
 
-// Prototypes des fonctions pour les modules
-void test_server();
-void synchro_list();
-void copy_list();
-void stat();
-void log_module(const char *message);
+pid_t testDisponibilite() {
+    return rand() % 2 == 0 ? 1 : 0;
+}
 
-// Fonction main
-int main() {
-    pid_t pid_integration, pid_production, pid_backup;
+void sync_directories() {
+    const char *cmd = "rsync -avz --delete Production/ Backup/ && rsync -avz --delete Backup/ Production/";
+    system(cmd);
+}
 
-    // Création du processus pour le serveur d'Intégration
-    pid_integration = fork();
-    if (pid_integration == 0) {
-        // Code du processus d'Intégration
-        printf("Processus d'Intégration démarré\n");
-        log_module("Processus d'Intégration démarré");
-        // Appels aux fonctions des modules nécessaires pour le serveur d'Intégration
-        // Exemple : test_server();
-        exit(0);
-    } else if (pid_integration < 0) {
-        perror("Erreur de création du processus d'Intégration");
+int main(void) {
+    int pid_production, pid_backup;
+    int p_fd[2], res = 1;
+    sync_directories();
+
+    FILE *updateListFile = fopen("listCopy.txt", "r");
+    if (!updateListFile) {
+        perror("Erreur lors de l'ouverture du fichier de liste");
+        return 1;
+    }
+
+        if (pipe(p_fd) == -1) {
+        perror("Erreur lors de la création du pipe.");
         exit(EXIT_FAILURE);
     }
 
-    // Création du processus pour le serveur de Production
-    pid_production = fork();
-    if (pid_production == 0) {
-        // Code du processus de Production
-        printf("Processus de Production démarré\n");
-        log_module("Processus de Production démarré");
-        // Appels aux fonctions des modules nécessaires pour le serveur de Production
-        test_server();
-        synchro_list();
-        copy_list();
-        stat();
-        exit(0);
-    } else if (pid_production < 0) {
-        perror("Erreur de création du processus de Production");
+    printf("Processus d'Intégration démarré\n");
+
+
+if (res == 1) {
+
+        if ((pid_production = fork()) > 0) {
+        getFileNames();
+        pipeSendList(p_fd);
+        wait(NULL);
+    } else if (pid_production == 0) {
+        printf("Access to this\n");
+        pipeReceiveList(p_fd); // Recevoir la liste des enfants
+        checkAndCopyFiles(updateListFile); // Mettre à jour la liste du parent
+        fclose(updateListFile);
+    } else {
+        perror("Erreur lors de la création du processus.");
         exit(EXIT_FAILURE);
     }
-
-    // Création du processus pour le serveur de Backup
-    pid_backup = fork();
-    if (pid_backup == 0) {
-        // Code du processus de Backup
-        printf("Processus de Backup démarré\n");
-        log_module("Processus de Backup démarré");
-        // Appels aux fonctions des modules nécessaires pour le serveur de Backup
-        // Exemple : synchro_list();
-        exit(0);
-    } else if (pid_backup < 0) {
-        perror("Erreur de création du processus de Backup");
+}else {        
+    if ((pid_backup = fork()) > 0) {
+        getFileNames();
+        pipeSendList(p_fd);
+        wait(NULL);
+    } else if (pid_backup == 0) {
+        printf("Access to this\n");
+        pipeReceiveList(p_fd); // Recevoir la liste des enfants
+        checkAndCopyFiles(updateListFile); // Mettre à jour la liste du parent
+        fclose(updateListFile);
+    } else {
+        perror("Erreur lors de la création du processus.");
         exit(EXIT_FAILURE);
     }
+    }
 
-    // Attendre que tous les processus enfants se terminent
-    wait(NULL);
-    wait(NULL);
-    wait(NULL);
 
     printf("Tous les processus sont terminés\n");
-    log_module("Tous les processus sont terminés");
 
     return 0;
 }
 
-// Implémentation des modules
-void test_server() {
-    // Code du module test_server
-    printf("Module test_server exécuté\n");
-    log_module("Module test_server exécuté");
-}
+/*
 
-void synchro_list() {
-    // Code du module synchro_list
-    printf("Module synchro_list exécuté\n");
-    log_module("Module synchro_list exécuté");
-}
+        if ((res = fork()) > 0) {
+        getFileNames();
+        pipeSendList(p_fd);
+        wait(NULL);
+    } else if (res == 0) {
+        printf("TEST TEST\n");
+        pipeReceiveList(p_fd);
+    } else {
+        perror("Erreur lors de la création du processus.");
+        exit(EXIT_FAILURE);
+    }
 
-void copy_list() {
-    // Code du module copy_list
-    printf("Module copy_list exécuté\n");
-    log_module("Module copy_list exécuté");
-}
+    if (res == 1) {
+        pid_production = fork();
+        printf("Processus de Production démarré\n");
+        pipeSendList(p_fd); 
+        wait(NULL); // Attendre la fin des processus enfants
+    }else {
+        pid_backup = fork();
+        printf("Processus de Backup démarré\n");
+        pipeSendList(p_fd);
+        wait(NULL); // Attendre la fin des processus enfants
+    }
 
-void stat() {
-    // Code du module stat
-    printf("Module stat exécuté\n");
-    log_module("Module stat exécuté");
-}
+    pipeReceiveList(p_fd); // Recevoir la liste des enfants
+    checkAndCopyFiles(updateListFile); // Mettre à jour la liste du parent
+    fclose(updateListFile);
 
-void log_module(const char *message) {
-    // Code du module log
-    printf("Log: %s\n", message);
-    // Ici, vous ajouteriez le code pour enregistrer le log dans un fichier ou une autre destination
-}
+    printf("Tous les processus sont terminés\n");
+
+*/
