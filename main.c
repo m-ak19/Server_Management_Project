@@ -26,6 +26,7 @@ int main(void) {
         perror("Erreur lors de l'ouverture du fichier de liste");
         return 1;
     }
+    /*APPEL UN */ checkAndCopyFiles(updateListFile);
 
         if (pipe(p_fd) == -1) {
         perror("Erreur lors de la création du pipe.");
@@ -45,7 +46,6 @@ if (res == 1) {
         printf("Access to this\n");
         pipeReceiveList(p_fd); // Recevoir la liste des enfants
         checkAndCopyFiles(updateListFile); // Mettre à jour la liste du parent
-        fclose(updateListFile);
     } else {
         perror("Erreur lors de la création du processus.");
         exit(EXIT_FAILURE);
@@ -59,13 +59,12 @@ if (res == 1) {
         printf("Access to this\n");
         pipeReceiveList(p_fd); // Recevoir la liste des enfants
         checkAndCopyFiles(updateListFile); // Mettre à jour la liste du parent
-        fclose(updateListFile);
     } else {
         perror("Erreur lors de la création du processus.");
         exit(EXIT_FAILURE);
     }
-    }
-
+}
+fclose(updateListFile);
 
     printf("Tous les processus sont terminés\n");
 
