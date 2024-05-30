@@ -11,16 +11,14 @@
 #define ENVOI_DIRECTORY "Production/"
 #define RECEPTION_DIRECTORY "Integration/"
 
-// Fonction pour extraire la date et l'heure à partir d'une chaîne de caractères
 void extractDateTime(const char *dateStr, struct tm *tm) {
     sscanf(dateStr, "%d/%d/%d - %d:%d:%d",
            &tm->tm_mday, &tm->tm_mon, &tm->tm_year,
            &tm->tm_hour, &tm->tm_min, &tm->tm_sec);
-    tm->tm_mon -= 1;  // Les mois vont de 0 à 11
-    tm->tm_year -= 1900;  // Les années commencent à 1900
+    tm->tm_mon -= 1;  
+    tm->tm_year -= 1900;  
 }
 
-// Fonction pour copier un fichier de srcPath à destPath
 void copyFile(const char *srcPath, const char *destPath) {
     FILE *srcFile = fopen(srcPath, "rb");
     if (!srcFile) {
@@ -45,7 +43,6 @@ void copyFile(const char *srcPath, const char *destPath) {
     fclose(destFile);
 }
 
-// Fonction pour vérifier et copier les fichiers si nécessaire
 void checkAndCopyFiles(FILE *updateListFile) {
     char line[512];
     char fileName[MAX_NOM_FICHIER];
@@ -54,14 +51,12 @@ void checkAndCopyFiles(FILE *updateListFile) {
     struct tm listTime, fileTime;
 
     while (fgets(line, sizeof(line), updateListFile) != NULL) {
-        // Utiliser sscanf pour extraire correctement les parties de la ligne
         char fileLine[256];
         if (sscanf(line, "%[^-] - %[^\n]", fileLine, dateStr) != 2) {
             fprintf(stderr, "Format de ligne incorrect : %s\n", line);
             continue;
         }
 
-        // Supprimer les espaces en début et fin de chaîne pour le nom de fichier
         char *startPtr = fileLine;
         while (*startPtr == ' ') startPtr++;
         char *endPtr = startPtr + strlen(startPtr) - 1;
