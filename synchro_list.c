@@ -16,9 +16,6 @@ char* ServList = "listCopy.txt";
 char* IntegrationServList = "listIntegration.txt";
 
 
-pid_t choisirProcessus(pid_t pid1, pid_t pid2) {
-    return rand() % 2 == 0 ? pid1 : pid2;
-}
 
 void getFileNames(){
 
@@ -108,10 +105,6 @@ void pipeReceiveList(int pipe_fd[]){
         fichier = fopen(IntegrationServList, "a+");
         if(fichier != NULL)
         {
-            // while((character = fgetc(fichier)) != EOF)
-            // {
-                // fputc(character, fichier);
-            // }
             fputs(buffer, fichier);
             fputc('\n', fichier);
             printf("Buffer: %s\n", buffer);

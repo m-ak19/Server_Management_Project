@@ -7,8 +7,11 @@
 #include <string.h>
 #include <signal.h>
 
+
+#define Production 1
+#define Backup 0
 pid_t testDisponibilite() {
-    return rand() % 2 == 0 ? 1 : 0;
+    return rand() % 2 == 0 ? Production : Backup;
 }
 
 void sync_directories() {
@@ -70,37 +73,3 @@ fclose(updateListFile);
 
     return 0;
 }
-
-/*
-
-        if ((res = fork()) > 0) {
-        getFileNames();
-        pipeSendList(p_fd);
-        wait(NULL);
-    } else if (res == 0) {
-        printf("TEST TEST\n");
-        pipeReceiveList(p_fd);
-    } else {
-        perror("Erreur lors de la création du processus.");
-        exit(EXIT_FAILURE);
-    }
-
-    if (res == 1) {
-        pid_production = fork();
-        printf("Processus de Production démarré\n");
-        pipeSendList(p_fd); 
-        wait(NULL); // Attendre la fin des processus enfants
-    }else {
-        pid_backup = fork();
-        printf("Processus de Backup démarré\n");
-        pipeSendList(p_fd);
-        wait(NULL); // Attendre la fin des processus enfants
-    }
-
-    pipeReceiveList(p_fd); // Recevoir la liste des enfants
-    checkAndCopyFiles(updateListFile); // Mettre à jour la liste du parent
-    fclose(updateListFile);
-
-    printf("Tous les processus sont terminés\n");
-
-*/
